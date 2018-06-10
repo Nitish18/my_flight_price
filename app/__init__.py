@@ -4,4 +4,4 @@ app = Flask(__name__)
 
 from user_auth.routes import user_auth
 
-app.register_blueprint(user_auth, url_prefix='/services')
+app.register_blueprint(user_auth, url_prefix='/auth')
