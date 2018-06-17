@@ -11,6 +11,14 @@ def user_register():
 		return register_hand.register_user()
 	return "This is registration"
 
-@user_auth.route('/login')
+
+@user_auth.route('/login', methods = ['POST'])
 def user_login():
+	register_hand = UserRegistration()
 	return "This is login"
+
+
+@user_auth.route('/logout/{user_id}', methods = ['GET'])
+def user_logout():
+	register_hand = UserRegistration()
+	return "This is logout"
