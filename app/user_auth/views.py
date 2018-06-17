@@ -1,15 +1,16 @@
 from flask import Blueprint, request
 from app import app
-from handlers.user_registration import UserRegistration
+from handlers.user_authentication import UserAuthentication
 
 user_auth = Blueprint('user_auth',__name__)
 
+
 @user_auth.route('/register', methods = ['POST'])
 def user_register():
+	register_handler = UserAuthentication(request)
 	if request.method == 'POST':
-		register_hand = UserRegistration()
-		return register_hand.register_user()
-	return "This is registration"
+		res = register_handler.register_user()
+		return "Registration !!!"
 
 
 @user_auth.route('/login', methods = ['POST'])
