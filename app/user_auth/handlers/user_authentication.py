@@ -25,6 +25,12 @@ class UserAuthentication:
 			
 			user_info['is_active'] = True
 			user_info['created'] = current_epoch()
+
+			# storing password hash instead of actual password
+			# getting hashed password
+			hashed_pass = Users().generate_hash(user_info['pass'])
+			user_info['pass'] = hashed_pass
+
 			self.user_obj.insert_one(user_info)
 			
 			return (200, "User registered !!!")
@@ -50,7 +56,6 @@ class UserAuthentication:
 		return (400, "user does not exist !!")
 
 	def check_user_creds(self, user_creds):
-		user_pass = self.user_obj.find_one({'email': user_creds['email']},{'pass': 1})
-		if str(user_pass['pass']) == str(user_creds['pass']):
-			return True
-		return False	
+		# checking password with hash stored in DB
+		user_pass_hashed = self.user_obj.find_one({'email': user_creds['email']},{'pass': 1})['pass']
+		return Users().verify_hash(user_creds['pass'], user_pass_hashed)	
