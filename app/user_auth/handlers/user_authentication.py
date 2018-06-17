@@ -37,3 +37,20 @@ class UserAuthentication:
 		if self.user_obj.find_one({'email':user_email,'is_active':True}):
 			return True
 		return False
+
+
+	def login_user(self):
+
+		user_creds = self.request.json
+		if self.user_already_exists(str(user_creds['email'])):
+			valid_user_creds = self.check_user_creds(user_creds)
+			if valid_user_creds:
+				return (200,"user successfully loged in !!")
+			return (401, "wrong login details")
+		return (400, "user does not exist !!")
+
+	def check_user_creds(self, user_creds):
+		user_pass = self.user_obj.find_one({'email': user_creds['email']},{'pass': 1})
+		if str(user_pass['pass']) == str(user_creds['pass']):
+			return True
+		return False	
