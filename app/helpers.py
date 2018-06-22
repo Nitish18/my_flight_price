@@ -2,7 +2,7 @@ import time
 import json
 from bson.json_util import dumps
 from datetime import datetime
-from flask import Response
+from flask import Response, jsonify
 
 def current_epoch():
     """
@@ -13,13 +13,12 @@ def current_epoch():
                  int(cur_timestamp.microsecond/1000)
 
 
-def send_response(data, status_code):
-    if isinstance(data,str):
-        return Response(
-            response= str(data),
-            status= int(status_code)
-        )
+def send_response(res):
+    data = {
+        "status_code" : res[0],
+        "data" : res[1] 
+    }
     return Response(
-            response= str(data),
-            status= int(status_code)
-        )
+        json.dumps(data),
+        status = res[0]
+    )

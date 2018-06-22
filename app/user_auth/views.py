@@ -12,15 +12,15 @@ def user_register():
 	register_handler = UserAuthentication(request)
 	if request.method == 'POST':
 		res = register_handler.register_user()
-		return send_response(res[1],res[0])
+		return send_response(res)
 	return send_response("request method not allowed",405)
 
-@user_auth.route('/login', methods = ['POST'])
+@user_auth.route('/login', methods = ['POST']) 
 def user_login():
 	login_handler = UserAuthentication(request)
 	if request.method == 'POST':
 		res = login_handler.login_user()
-		return send_response(res[1],res[0])
+		return send_response(res)
 	return send_response("request method not allowed",405) 
 
 

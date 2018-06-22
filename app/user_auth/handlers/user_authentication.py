@@ -41,14 +41,12 @@ class UserAuthentication:
 			return (200, "User registered !!!")
 		
 		except Exception as e:
-			return (400,"please check input !!")
-
+			return (400, "please check input !!")
 
 	def user_already_exists(self,user_email):
 		if self.user_obj.find_one({'email':user_email,'is_active':True}):
 			return True
 		return False
-
 
 	def login_user(self):
 		user_creds = self.request.json
@@ -56,7 +54,11 @@ class UserAuthentication:
 			valid_user_creds = self.check_user_creds(user_creds)
 			if valid_user_creds:
 				jwt_token = self.generate_jwt_token(user_creds)
-				return (200, jwt_token)
+				data = {
+					"token" : jwt_token,
+					"message" : "user logged-in"
+				}
+				return (200, data)
 			return (401, "wrong login details")
 		return (400, "user does not exist !!")
 
@@ -64,7 +66,6 @@ class UserAuthentication:
 		# checking password with hash stored in DB
 		user_pass_hashed = self.user_obj.find_one({'email': user_creds['email']},{'pass': 1})['pass']
 		return Users().verify_hash(user_creds['pass'], user_pass_hashed)
-
 	
 	def generate_jwt_token(self, user_creds):
 		encoded_jwt = jwt.encode(
