@@ -4,7 +4,6 @@ from bson.json_util import dumps
 from datetime import datetime
 from flask import Response
 
-
 def current_epoch():
     """
     returns current time while updating measures or value-set.
@@ -20,7 +19,7 @@ def send_response(data, status_code):
             response= str(data),
             status= int(status_code)
         )
-	return Response(
-	        response=json.dumps(data),
-	        status= int(status_code)
-	    )
+    return Response(
+            response= str(data),
+            status= int(status_code)
+        )

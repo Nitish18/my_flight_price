@@ -1,8 +1,13 @@
+import config as config
+import datetime
+import uuid
 from app import app
 from app.user_auth.models import Users
 from ..models import Users
 from jsonschema import validate
 from ...helpers import current_epoch
+from datetime import timedelta
+import jwt
 
 
 class UserAuthentication:
@@ -46,16 +51,28 @@ class UserAuthentication:
 
 
 	def login_user(self):
-
 		user_creds = self.request.json
 		if self.user_already_exists(str(user_creds['email'])):
 			valid_user_creds = self.check_user_creds(user_creds)
 			if valid_user_creds:
-				return (200,"user successfully loged in !!")
+				jwt_token = self.generate_jwt_token(user_creds)
+				return (200, jwt_token)
 			return (401, "wrong login details")
 		return (400, "user does not exist !!")
 
 	def check_user_creds(self, user_creds):
 		# checking password with hash stored in DB
 		user_pass_hashed = self.user_obj.find_one({'email': user_creds['email']},{'pass': 1})['pass']
-		return Users().verify_hash(user_creds['pass'], user_pass_hashed)	
+		return Users().verify_hash(user_creds['pass'], user_pass_hashed)
+
+	
+	def generate_jwt_token(self, user_creds):
+		encoded_jwt = jwt.encode(
+    			{
+			        'sub': str(user_creds['email']),
+			        'exp': datetime.datetime.utcnow() + timedelta(seconds=config.JWT_EXP_DELTA_SECONDS)
+    			},
+    			config.JWT_SECRET,
+    			algorithm=config.JWT_ALGORITHM
+    		)
+		return encoded_jwt
