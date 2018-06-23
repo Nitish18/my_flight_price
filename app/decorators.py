@@ -1,17 +1,22 @@
 import jwt
 import config as config
-
+from functools import wraps
+from flask import request
+from .helpers import send_response
 
 def validate_jwt_token(func):
-	def wraps(request):
+	@wraps(func)
+	def decorated_function(*args, **kwargs):
+		user_jwt_token =  request.headers['Authorization']
 		try:
-			jwt_algo = list(config.JWT_ALGORITHM)
-	    	jwt.decode(jwt_token, config.JWT_SECRET, algorithms = jwt_algo)
-	    	return func
+			algo = []
+			algo.append(config.JWT_ALGORITHM)
+			jwt.decode(str(user_jwt_token), config.JWT_SECRET, algorithms=algo,verify= True)
 		except jwt.ExpiredSignatureError:
-		    raise e
+			return send_response((400,"Your token expired !!"))
 		except jwt.InvalidTokenError:
-			raise e
+			return send_response((400,"Token Invalid"))
 		except jwt.DecodeError:
-			raise e
-	return wraps
+			return send_response((400,"Cannot decode your token"))
+		return func(*args, **kwargs)
+	return decorated_function

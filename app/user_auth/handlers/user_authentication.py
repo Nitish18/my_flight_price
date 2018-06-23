@@ -8,6 +8,7 @@ from jsonschema import validate
 from ...helpers import current_epoch
 from datetime import timedelta
 import jwt
+from ...decorators import validate_jwt_token
 
 
 class UserAuthentication:
@@ -77,3 +78,7 @@ class UserAuthentication:
     			algorithm=config.JWT_ALGORITHM
     		)
 		return encoded_jwt
+
+	@validate_jwt_token
+	def demo_method(self):
+		return (200,"demo api testing")
