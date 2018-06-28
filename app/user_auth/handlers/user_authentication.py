@@ -8,7 +8,9 @@ from jsonschema import validate
 from ...helpers import current_epoch
 from datetime import timedelta
 import jwt
+import uuid
 from ...decorators import validate_jwt_token
+from db.redis_connection import get_redis_connection
 
 
 class UserAuthentication:
@@ -16,6 +18,7 @@ class UserAuthentication:
 	def __init__(self,request):
 		self.request = request
 		self.user_obj = Users().mongo_connector()
+		self.redis_obj = get_redis_connection()
 
 	def register_user(self):
 		valid_user_info = Users().sample_json_schema()
@@ -69,16 +72,24 @@ class UserAuthentication:
 		return Users().verify_hash(user_creds['pass'], user_pass_hashed)
 	
 	def generate_jwt_token(self, user_creds):
+		session_id = str(uuid.uuid4())
 		encoded_jwt = jwt.encode(
     			{
 			        'sub': str(user_creds['email']),
-			        'exp': datetime.datetime.utcnow() + timedelta(seconds=config.JWT_EXP_DELTA_SECONDS)
+			        'exp': datetime.datetime.utcnow() + timedelta(seconds=config.JWT_EXP_DELTA_SECONDS),
+			        'iat': datetime.datetime.utcnow(),
+        			'session_id': session_id
     			},
     			config.JWT_SECRET,
     			algorithm=config.JWT_ALGORITHM
     		)
+		# inserting session in redis
+		self.insert_in_redis(user_creds['email'], session_id)	
 		return encoded_jwt
 
 	@validate_jwt_token
 	def demo_method(self):
 		return (200,"demo api testing")
+
+	def insert_in_redis(self, email, session_id):
+		self.redis_obj.setex(str(session_id), config.SESSION_EXP_TIME, str(email))
