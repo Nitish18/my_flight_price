@@ -8,6 +8,7 @@ from ...helpers import current_epoch
 from datetime import timedelta
 from ...decorators import validate_jwt_token
 from db.redis_connection import get_redis_connection
+from ..celery.text_celery_tasks import twilio_send_message
 
 
 class MessageService:
@@ -19,17 +20,14 @@ class MessageService:
 		self.message_request_obj = self.message_request.mongo_connector()
 
 
-		
-	
 	def s_message(self,message_type):
 		msg_payload =  self.request.json
 		if message_type in ['text']:
-			
 			self.save_message_logs(msg_payload)
-
-
-
-		return "hello"
+			# calling celery task to send messages using twilio
+			res = twilio_send_message.delay(msg_payload)
+			return (200, "Your message will be send !!!")
+		return (401, "missing message payload")
 
 	
 	def save_message_logs(self, msg_log = None):
