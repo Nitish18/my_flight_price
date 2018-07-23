@@ -1,19 +1,11 @@
 import config as config
-from .celery_initialization import get_text_celery_task
+from .celery_initialization import task_obj as celery_obj
 from twilio.rest import Client
-
-
-text_celery_obj = get_text_celery_task()
-text_celery_obj.conf.update(
-    task_routes = {
-        'app.messaging_service.celery.text_celery_tasks.*': {'queue': 'text_queue'}
-    }
-)
 
 #twilio configs
 client = Client(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN)
 
-@text_celery_obj.task
+@celery_obj.task
 def twilio_send_message(msg_body=None):
 	if msg_body:
 		try:
@@ -21,7 +13,7 @@ def twilio_send_message(msg_body=None):
 			for item in send_to:
 				receiver_no = '+91'+str(item)
 				client.messages.create(
-					to= receiver_no,
+					to=receiver_no,
 					from_=config.TWILIO_NUMBER,
 					body= str(msg_body.get('message'))
 				)

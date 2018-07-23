@@ -8,7 +8,7 @@ from ...helpers import current_epoch
 from datetime import timedelta
 from ...decorators import validate_jwt_token
 from db.redis_connection import get_redis_connection
-from ..celery.text_celery_tasks import twilio_send_message
+from ..celery.all_celery_tasks import twilio_send_message
 
 
 class MessageService:
@@ -23,9 +23,13 @@ class MessageService:
 	def s_message(self,message_type):
 		msg_payload =  self.request.json
 		if message_type in ['text']:
+
+			queue_priority = str(msg_payload.get('priority','low'))
+
 			self.save_message_logs(msg_payload)
 			# calling celery task to send messages using twilio
-			res = twilio_send_message.delay(msg_payload)
+			res = twilio_send_message.apply_async(args = [msg_payload], queue=queue_priority)
+			# res = twilio_send_message.delay(msg_payload)
 			return (200, "Your message will be send !!!")
 		return (401, "missing message payload")
 
